@@ -10,11 +10,15 @@ import (
 
 // Track words in a struct
 type words struct {
+	sync.Mutex // Inherits the mutex lock
 	found map[string]int
 }
 
 // Tracks the number of times you've seen this word
 func (w *words) add(word string, n int) {
+	// Locks the object, modifies the map, and then unlocks the object
+	w.Lock()
+	defer w.Unlock()
 	// If the word isn't already tracked, add it.
 	// Otherwise, increment the count.
 	count, ok := w.found[word]
@@ -70,9 +74,11 @@ func main() {
 	wg.Wait()
 	// Print what you found
 	fmt.Println("Words that appear more than once:")
+	w.Lock()
 	for word, count := range w.found {
 		if count > 1 {
 			fmt.Printf("%s: %d\n", word, count)
 		}
 	}
+	w.Unlock()
 }
